@@ -3,6 +3,7 @@ package com.leonard.policereport.ui
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -31,25 +32,35 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(MapsViewModel::class.java)
+        viewModel.loadingEventsState.observe(this, Observer { state ->
+            when (state) {
+                is MapsViewModel.ViewState.Loading ->
+                    Log.d("London Map", "Loading")
+                is MapsViewModel.ViewState.Error ->
+                    Log.d("London Map", "${state.exception.message}")
+                is MapsViewModel.ViewState.Empty ->
+                    Log.d("London Map", "Empty")
+                is MapsViewModel.ViewState.Content ->
+                    Log.d("London Map", "Content, size = ${state.events.size}")
+            }
+        })
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
-        map = googleMap
-
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(viewModel.location, viewModel.zoom))
-
-        map.setOnCameraIdleListener (::onCameraIdle)
+        map = googleMap.apply {
+            moveCamera(CameraUpdateFactory.newLatLngZoom(viewModel.location, viewModel.zoom))
+            setOnCameraIdleListener(::onCameraIdle)
+        }
     }
 
     private fun onCameraIdle() {
-        Log.d("London Map","onCameraIdle")
-        try{
+        Log.d("London Map", "onCameraIdle")
+        try {
             viewModel.location = map.cameraPosition.target
             viewModel.zoom = map.cameraPosition.zoom
             viewModel.bounds = map.projection.visibleRegion.latLngBounds
         } catch (exception: Exception) {
             Log.e("MAP_EXCEPTION", exception.message.orEmpty())
         }
-
     }
 }

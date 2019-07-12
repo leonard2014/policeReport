@@ -1,24 +1,69 @@
 package com.leonard.policereport.ui
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.leonard.policereport.model.CrimeEvent
+import com.leonard.policereport.repository.Repository
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.plusAssign
 import javax.inject.Inject
 
-class MapsViewModel : ViewModel() {
-    //Latitude and Longitude of London City
-    var location = LatLng(51.5131808,-0.090536)
-    var zoom = 16f
+class MapsViewModel(private val repository: Repository) : ViewModel() {
+    sealed class ViewState {
+        object Loading : ViewState()
+        class Error(val exception: Throwable) : ViewState()
+        object Empty : ViewState()
+        data class Content(val events: List<CrimeEvent>) : ViewState()
+    }
 
-    lateinit var bounds : LatLngBounds
+    private val _loadingEventsState = MutableLiveData<ViewState>().apply { value = ViewState.Loading }
+    val loadingEventsState: LiveData<ViewState> = _loadingEventsState
+
+    //Latitude and Longitude of London City
+    var location = LatLng(51.5131808, -0.090536)
+    var zoom = 18f
+
+    var bounds = LatLngBounds(LatLng(0.0, 0.0), LatLng(0.0, 0.0))
+        set(value) {
+            field = value
+            loadCrimeEvents(value)
+        }
+
+    private var disposeBag = CompositeDisposable()
+
+    override fun onCleared() {
+        super.onCleared()
+        disposeBag.clear()
+    }
+
+    fun loadCrimeEvents(bounds: LatLngBounds) {
+        disposeBag += repository.getCrimeEvents(
+            bounds.southwest.latitude.toFloat(), bounds.southwest.longitude.toFloat(),
+            bounds.northeast.latitude.toFloat(), bounds.northeast.latitude.toFloat()
+        ).subscribe(
+            { events ->
+                if (!events.isEmpty()) {
+                    _loadingEventsState.postValue(ViewState.Content(events))
+                } else {
+                    _loadingEventsState.postValue(ViewState.Empty)
+                }
+            },
+            { error ->
+                _loadingEventsState.postValue(ViewState.Error(error))
+            }
+        )
+    }
 }
 
 class MapsViewModelFactory
-@Inject constructor() : ViewModelProvider.Factory {
+@Inject constructor(private val repository: Repository) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T =
         if (modelClass.isAssignableFrom(MapsViewModel::class.java)) {
-            MapsViewModel() as T
+            MapsViewModel(repository) as T
         } else {
             throw IllegalArgumentException("unknown model class $modelClass")
         }
