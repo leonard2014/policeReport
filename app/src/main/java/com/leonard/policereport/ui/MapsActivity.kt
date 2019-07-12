@@ -1,8 +1,8 @@
 package com.leonard.policereport.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -36,12 +36,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
 
-        val width = resources?.displayMetrics?.widthPixels ?: 1080
-        val height = resources?.displayMetrics?.heightPixels ?: 1920
-        val padding = 0
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(viewModel.location, viewModel.zoom))
 
-        viewModel.viewState.observe(this, Observer { state ->
-            map.moveCamera(CameraUpdateFactory.newLatLngBounds(state.bounds, width, height, padding))
-        })
+        map.setOnCameraIdleListener (::onCameraIdle)
+    }
+
+    private fun onCameraIdle() {
+        Log.d("London Map","onCameraIdle")
+        try{
+            viewModel.location = map.cameraPosition.target
+            viewModel.zoom = map.cameraPosition.zoom
+            viewModel.bounds = map.projection.visibleRegion.latLngBounds
+        } catch (exception: Exception) {
+            Log.e("MAP_EXCEPTION", exception.message.orEmpty())
+        }
+
     }
 }
