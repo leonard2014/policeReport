@@ -27,11 +27,11 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
     var location = LatLng(51.5131808, -0.090536)
     var zoom = 18f
 
-    var bounds = LatLngBounds(LatLng(0.0, 0.0), LatLng(0.0, 0.0))
-        set(value) {
-            field = value
-            loadCrimeEvents(value)
-        }
+    private var bounds = LatLngBounds(LatLng(0.0, 0.0), LatLng(0.0, 0.0))
+    fun setBounds(value: LatLngBounds) {
+        bounds = value
+        loadCrimeEvents(value)
+    }
 
     private var disposeBag = CompositeDisposable()
 
@@ -41,6 +41,8 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
     }
 
     fun loadCrimeEvents(bounds: LatLngBounds) {
+        _loadingEventsState.postValue(ViewState.Loading)
+
         disposeBag += repository.getCrimeEvents(
             bounds.southwest.latitude.toFloat(), bounds.southwest.longitude.toFloat(),
             bounds.northeast.latitude.toFloat(), bounds.northeast.latitude.toFloat()

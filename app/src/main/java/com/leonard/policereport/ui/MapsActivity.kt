@@ -2,6 +2,7 @@ package com.leonard.policereport.ui
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -9,8 +10,10 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.material.snackbar.Snackbar
 import com.leonard.policereport.R
 import dagger.android.AndroidInjection
+import kotlinx.android.synthetic.main.activity_maps.*
 import javax.inject.Inject
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -35,13 +38,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         viewModel.loadingEventsState.observe(this, Observer { state ->
             when (state) {
                 is MapsViewModel.ViewState.Loading ->
-                    Log.d("London Map", "Loading")
-                is MapsViewModel.ViewState.Error ->
-                    Log.d("London Map", "${state.exception.message}")
-                is MapsViewModel.ViewState.Empty ->
-                    Log.d("London Map", "Empty")
-                is MapsViewModel.ViewState.Content ->
-                    Log.d("London Map", "Content, size = ${state.events.size}")
+                    progressBar.visibility = View.VISIBLE
+                is MapsViewModel.ViewState.Error -> {
+                    progressBar.visibility = View.GONE
+                    Snackbar.make(rootView, "Sorry, something is wrong", Snackbar.LENGTH_SHORT)
+                        .show()
+                }
+                is MapsViewModel.ViewState.Empty -> {
+                    progressBar.visibility = View.GONE
+                    Snackbar.make(rootView, "No events found", Snackbar.LENGTH_SHORT)
+                        .show()
+                }
+                is MapsViewModel.ViewState.Content -> {
+                    progressBar.visibility = View.GONE
+                    Snackbar.make(rootView, "${state.events.size} found", Snackbar.LENGTH_SHORT)
+                        .show()
+                }
             }
         })
     }
@@ -58,7 +70,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         try {
             viewModel.location = map.cameraPosition.target
             viewModel.zoom = map.cameraPosition.zoom
-            viewModel.bounds = map.projection.visibleRegion.latLngBounds
+            viewModel.setBounds(map.projection.visibleRegion.latLngBounds)
         } catch (exception: Exception) {
             Log.e("MAP_EXCEPTION", exception.message.orEmpty())
         }
