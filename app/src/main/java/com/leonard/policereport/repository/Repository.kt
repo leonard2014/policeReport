@@ -9,12 +9,18 @@ class Repository(private val apiService: ApiService) {
         southWestLat: Double,
         southWestLong: Double,
         northEastLat: Double,
-        northEastlong: Double
+        northEastLong: Double
     ): Single<List<CrimeEvent>> {
         val poly =
-            "$northEastLat,$southWestLong:$northEastLat,$northEastlong:$southWestLat,$northEastlong:$southWestLat,$southWestLong"
+            "$northEastLat,$southWestLong:$northEastLat,$northEastLong:$southWestLat,$northEastLong:$southWestLat,$southWestLong"
         return apiService.getCrimeEvents(poly)
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.computation())
+            .map { events ->
+                events.filter { event ->
+                    event.location.latitude in southWestLat..northEastLat &&
+                    event.location.longitude in southWestLong..northEastLong
+                }
+            }
     }
 }

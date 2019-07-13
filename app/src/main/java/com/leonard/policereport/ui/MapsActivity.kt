@@ -55,8 +55,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 is MapsViewModel.ViewState.Content -> {
                     progressBar.visibility = View.GONE
-                    Snackbar.make(rootView, getString(R.string.found_events, state.events.size), Snackbar.LENGTH_SHORT)
-                        .show()
                     drawMarkers(state)
                 }
             }
