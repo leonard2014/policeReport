@@ -16,6 +16,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
 import com.leonard.policereport.R
 import dagger.android.AndroidInjection
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.plusAssign
+import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_maps.*
 import javax.inject.Inject
 
@@ -26,6 +29,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var viewModel: MapsViewModel
 
     private lateinit var map: GoogleMap
+
+    private val mapContentSubject: BehaviorSubject<MapsViewModel.ViewState.Content> = BehaviorSubject.create()
+    private var disposeBag = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -55,7 +61,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 is MapsViewModel.ViewState.Content -> {
                     progressBar.visibility = View.GONE
-                    drawMarkers(state)
+                    mapContentSubject.onNext(state)
                 }
             }
         })
@@ -66,6 +72,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             moveCamera(CameraUpdateFactory.newLatLngZoom(viewModel.location, viewModel.zoom))
             setOnCameraIdleListener(::onCameraIdle)
         }
+
+        disposeBag += mapContentSubject.subscribe(::drawMarkers)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        disposeBag.clear()
     }
 
     private fun onCameraIdle() {
