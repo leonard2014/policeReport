@@ -6,10 +6,10 @@ import io.reactivex.schedulers.Schedulers
 
 class Repository(private val apiService: ApiService) {
     fun getCrimeEvents(
-        southWestLat: Float,
-        southWestLong: Float,
-        northEastLat: Float,
-        northEastlong: Float
+        southWestLat: Double,
+        southWestLong: Double,
+        northEastLat: Double,
+        northEastlong: Double
     ): Single<List<CrimeEvent>> {
         val poly =
             "$northEastLat,$southWestLong:$northEastLat,$northEastlong:$southWestLat,$northEastlong:$southWestLat,$southWestLong"

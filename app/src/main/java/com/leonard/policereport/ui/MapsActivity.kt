@@ -1,5 +1,6 @@
 package com.leonard.policereport.ui
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -10,6 +11,8 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
 import com.leonard.policereport.R
 import dagger.android.AndroidInjection
@@ -42,7 +45,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 is MapsViewModel.ViewState.Error -> {
                     progressBar.visibility = View.GONE
                     Snackbar.make(rootView, getString(R.string.something_wrong), Snackbar.LENGTH_INDEFINITE)
-                        .setAction(getString(R.string.retry)) {viewModel.loadCrimeEvents()}
+                        .setAction(getString(R.string.retry)) { viewModel.loadCrimeEvents() }
                         .show()
                 }
                 is MapsViewModel.ViewState.Empty -> {
@@ -54,6 +57,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     progressBar.visibility = View.GONE
                     Snackbar.make(rootView, getString(R.string.found_events, state.events.size), Snackbar.LENGTH_SHORT)
                         .show()
+                    drawMarkers(state)
                 }
             }
         })
@@ -76,4 +80,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.e("MAP_EXCEPTION", exception.message.orEmpty())
         }
     }
+
+    private fun drawMarkers(content: MapsViewModel.ViewState.Content) {
+        content.events.forEach { event ->
+            val circleOptions = CircleOptions().center(LatLng(event.location.latitude, event.location.longitude))
+                .radius(1.0)
+                .fillColor(Color.RED)
+                .strokeColor(Color.RED)
+            map.addCircle(circleOptions)
+        }
+    }
+
 }
