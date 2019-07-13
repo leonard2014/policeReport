@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">policeReport</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">policeReport</string>
+    <string name="appbar_scrolling_view_behavior">
+        com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior
+    </string>
 </resources>
