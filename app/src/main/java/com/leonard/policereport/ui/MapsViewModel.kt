@@ -30,7 +30,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
     private var bounds = LatLngBounds(LatLng(0.0, 0.0), LatLng(0.0, 0.0))
     fun setBounds(value: LatLngBounds) {
         bounds = value
-        loadCrimeEvents(value)
+        loadCrimeEvents()
     }
 
     private var disposeBag = CompositeDisposable()
@@ -40,7 +40,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
         disposeBag.clear()
     }
 
-    fun loadCrimeEvents(bounds: LatLngBounds) {
+    fun loadCrimeEvents() {
         _loadingEventsState.postValue(ViewState.Loading)
 
         disposeBag += repository.getCrimeEvents(

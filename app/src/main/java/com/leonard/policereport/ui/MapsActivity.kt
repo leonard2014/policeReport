@@ -41,17 +41,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     progressBar.visibility = View.VISIBLE
                 is MapsViewModel.ViewState.Error -> {
                     progressBar.visibility = View.GONE
-                    Snackbar.make(rootView, "Sorry, something is wrong", Snackbar.LENGTH_SHORT)
+                    Snackbar.make(rootView, getString(R.string.something_wrong), Snackbar.LENGTH_INDEFINITE)
+                        .setAction(getString(R.string.retry)) {viewModel.loadCrimeEvents()}
                         .show()
                 }
                 is MapsViewModel.ViewState.Empty -> {
                     progressBar.visibility = View.GONE
-                    Snackbar.make(rootView, "No events found", Snackbar.LENGTH_SHORT)
+                    Snackbar.make(rootView, getString(R.string.no_events), Snackbar.LENGTH_SHORT)
                         .show()
                 }
                 is MapsViewModel.ViewState.Content -> {
                     progressBar.visibility = View.GONE
-                    Snackbar.make(rootView, "${state.events.size} found", Snackbar.LENGTH_SHORT)
+                    Snackbar.make(rootView, getString(R.string.found_events, state.events.size), Snackbar.LENGTH_SHORT)
                         .show()
                 }
             }

@@ -4,4 +4,8 @@
     <string name="appbar_scrolling_view_behavior">
         com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior
     </string>
+    <string name="something_wrong">Sorry, something is wrong</string>
+    <string name="retry">Retry</string>
+    <string name="no_events">No events found</string>
+    <string name="found_events">%d found</string>
 </resources>
