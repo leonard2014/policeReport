@@ -45,7 +45,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
 
         disposeBag += repository.getCrimeEvents(
             bounds.southwest.latitude, bounds.southwest.longitude,
-            bounds.northeast.latitude, bounds.northeast.latitude
+            bounds.northeast.latitude, bounds.northeast.longitude
         ).subscribe(
             { events ->
                 if (!events.isEmpty()) {

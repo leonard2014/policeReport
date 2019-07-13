@@ -28,7 +28,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var viewModel: MapsViewModel
 
-    private lateinit var map: GoogleMap
+    private var map: GoogleMap? = null
 
     private val mapContentSubject: BehaviorSubject<MapsViewModel.ViewState.Content> = BehaviorSubject.create()
     private var disposeBag = CompositeDisposable()
@@ -46,8 +46,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(MapsViewModel::class.java)
         viewModel.loadingEventsState.observe(this, Observer { state ->
             when (state) {
-                is MapsViewModel.ViewState.Loading ->
+                is MapsViewModel.ViewState.Loading -> {
                     progressBar.visibility = View.VISIBLE
+                    map?.clear()
+                }
                 is MapsViewModel.ViewState.Error -> {
                     progressBar.visibility = View.GONE
                     Snackbar.make(rootView, getString(R.string.something_wrong), Snackbar.LENGTH_INDEFINITE)
@@ -84,22 +86,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun onCameraIdle() {
         Log.d("London Map", "onCameraIdle")
         try {
-            viewModel.location = map.cameraPosition.target
-            viewModel.zoom = map.cameraPosition.zoom
-            viewModel.setBounds(map.projection.visibleRegion.latLngBounds)
+            map?.let {
+                viewModel.location = it.cameraPosition.target
+                viewModel.zoom = it.cameraPosition.zoom
+                viewModel.setBounds(it.projection.visibleRegion.latLngBounds)
+            }
         } catch (exception: Exception) {
             Log.e("MAP_EXCEPTION", exception.message.orEmpty())
         }
     }
 
     private fun drawMarkers(content: MapsViewModel.ViewState.Content) {
-        content.events.forEach { event ->
-            val circleOptions = CircleOptions().center(LatLng(event.location.latitude, event.location.longitude))
-                .radius(1.0)
-                .fillColor(Color.RED)
-                .strokeColor(Color.RED)
-            map.addCircle(circleOptions)
+        map?.run {
+            content.events.forEach { event ->
+                val circleOptions = CircleOptions().center(LatLng(event.location.latitude, event.location.longitude))
+                    .radius(1.0)
+                    .fillColor(Color.RED)
+                    .strokeColor(Color.RED)
+                addCircle(circleOptions)
+            }
         }
     }
-
 }
