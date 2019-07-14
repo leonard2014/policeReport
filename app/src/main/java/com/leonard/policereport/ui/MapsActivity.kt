@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -20,6 +21,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_maps.*
+import java.util.*
 import javax.inject.Inject
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -44,6 +46,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(MapsViewModel::class.java)
+        setupObserver()
+        setupMonthList()
+    }
+
+    private fun setupObserver() {
         viewModel.loadingEventsState.observe(this, Observer { state ->
             when (state) {
                 is MapsViewModel.ViewState.Loading -> {
@@ -67,6 +74,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         })
+    }
+
+    private fun setupMonthList() {
+        val currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
+        val months = IntArray(currentMonth) {currentMonth - it}.toTypedArray()
+        val adapter = ArrayAdapter<Int>(this, R.layout.month_item, months)
+
+        monthSpinner.adapter = adapter
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
