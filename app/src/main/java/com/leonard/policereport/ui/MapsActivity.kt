@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -21,7 +22,6 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_maps.*
-import java.util.*
 import javax.inject.Inject
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -32,8 +32,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var map: GoogleMap? = null
 
-    private val mapContentSubject: BehaviorSubject<MapsViewModel.ViewState.Content> = BehaviorSubject.create()
+    private val mapContentSubject = BehaviorSubject.create<MapsViewModel.ViewState.Content>()
     private var disposeBag = CompositeDisposable()
+
+    private var snackbar: Snackbar? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -56,17 +58,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 is MapsViewModel.ViewState.Loading -> {
                     progressBar.visibility = View.VISIBLE
                     map?.clear()
+                    snackbar?.dismiss()
                 }
                 is MapsViewModel.ViewState.Error -> {
                     progressBar.visibility = View.GONE
-                    Snackbar.make(rootView, getString(R.string.something_wrong), Snackbar.LENGTH_INDEFINITE)
+                    snackbar = Snackbar.make(rootView, getString(R.string.something_wrong), Snackbar.LENGTH_INDEFINITE)
                         .setAction(getString(R.string.retry)) { viewModel.loadCrimeEvents() }
-                        .show()
+                        .apply{show()}
                 }
                 is MapsViewModel.ViewState.Empty -> {
                     progressBar.visibility = View.GONE
-                    Snackbar.make(rootView, getString(R.string.no_events), Snackbar.LENGTH_SHORT)
-                        .show()
+                    snackbar = Snackbar.make(rootView, getString(R.string.no_events), Snackbar.LENGTH_SHORT)
+                        .apply{show()}
                 }
                 is MapsViewModel.ViewState.Content -> {
                     progressBar.visibility = View.GONE
@@ -77,11 +80,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setupMonthList() {
-        val currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
-        val months = IntArray(currentMonth) {currentMonth - it}.toTypedArray()
+        val currentMonth = viewModel.month
+        val months = IntArray(currentMonth) { currentMonth - it }.toTypedArray()
         val adapter = ArrayAdapter<Int>(this, R.layout.month_item, months)
 
         monthSpinner.adapter = adapter
+        monthSpinner.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, view: View?, position: Int, p3: Long) {
+                    viewModel.month = months[position]
+                }
+
+                override fun onNothingSelected(p0: AdapterView<*>?) {}
+            }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
