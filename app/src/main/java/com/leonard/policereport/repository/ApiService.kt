@@ -7,5 +7,5 @@ import retrofit2.http.Query
 
 interface ApiService {
     @GET("api/crimes-street/all-crime")
-    fun getCrimeEvents(@Query("poly") poly: String): Single<List<CrimeEvent>>
+    fun getCrimeEvents(@Query("poly") poly: String, @Query("date") date: String): Single<List<CrimeEvent>>
 }

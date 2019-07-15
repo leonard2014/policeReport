@@ -80,7 +80,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setupMonthList() {
-        val currentMonth = viewModel.month
+        //hardcoded to July, 2019
+        val currentMonth = 7
         val months = IntArray(currentMonth) { currentMonth - it }.toTypedArray()
         val adapter = ArrayAdapter<Int>(this, R.layout.month_item, months)
 
@@ -93,6 +94,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
+
+        monthSpinner.setSelection(currentMonth - viewModel.month)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {

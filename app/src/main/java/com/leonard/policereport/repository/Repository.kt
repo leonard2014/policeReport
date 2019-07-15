@@ -9,11 +9,14 @@ class Repository(private val apiService: ApiService) {
         southWestLat: Double,
         southWestLong: Double,
         northEastLat: Double,
-        northEastLong: Double
+        northEastLong: Double,
+        year: Int,
+        month: Int
     ): Single<List<CrimeEvent>> {
         val poly =
             "$northEastLat,$southWestLong:$northEastLat,$northEastLong:$southWestLat,$northEastLong:$southWestLat,$southWestLong"
-        return apiService.getCrimeEvents(poly)
+        val date = String.format("%04d-%02d", year, month)
+        return apiService.getCrimeEvents(poly, date)
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.computation())
             .map { events ->

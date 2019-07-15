@@ -13,7 +13,6 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Function3
 import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.subjects.BehaviorSubject
-import java.util.*
 import javax.inject.Inject
 
 class MapsViewModel(private val repository: Repository) : ViewModel() {
@@ -31,10 +30,11 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
     var location = LatLng(51.5131808, -0.090536)
     var zoom = 18f
 
-    private val year = Calendar.getInstance().get(Calendar.YEAR)
-    private val currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
+    //hardcoded to 2019
+    private val year = 2019
     private val monthSubject = BehaviorSubject.create<Int>()
-    var month = currentMonth
+    //hard coded to May
+    var month = 5
         set(monthValue) {
             field = monthValue
             monthSubject.onNext(monthValue)
@@ -60,14 +60,16 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
                 _loadingEventsState.postValue(ViewState.Loading)
                 repository.getCrimeEvents(
                     bounds.southwest.latitude, bounds.southwest.longitude,
-                    bounds.northeast.latitude, bounds.northeast.longitude
-                ).map { events ->
-                    if (events.isNotEmpty()) {
-                        ViewState.Content(events)
-                    } else {
-                        ViewState.Empty
+                    bounds.northeast.latitude, bounds.northeast.longitude,
+                    year, month
+                )
+                    .map { events ->
+                        if (events.isNotEmpty()) {
+                            ViewState.Content(events)
+                        } else {
+                            ViewState.Empty
+                        }
                     }
-                }
                     .onErrorReturn { error -> ViewState.Error(error) }
                     .toObservable()
             }
