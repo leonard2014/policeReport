@@ -13,12 +13,14 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Function3
 import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.subjects.BehaviorSubject
+import retrofit2.HttpException
 import javax.inject.Inject
 
 class MapsViewModel(private val repository: Repository) : ViewModel() {
     sealed class ViewState {
         object Loading : ViewState()
-        class Error(val exception: Throwable) : ViewState()
+        class GenericError(val exception: Throwable) : ViewState()
+        object TooManyEvents : ViewState()
         object Empty : ViewState()
         data class Content(val events: List<CrimeEvent>) : ViewState()
     }
@@ -56,7 +58,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
             boundsSubject,
             forceLoadSubject,
             Function3 { _: Int, _: LatLngBounds, _: Boolean -> {} })
-            .flatMap {
+            .switchMap {
                 _loadingEventsState.postValue(ViewState.Loading)
                 repository.getCrimeEvents(
                     bounds.southwest.latitude, bounds.southwest.longitude,
@@ -64,13 +66,20 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
                     year, month
                 )
                     .map { events ->
-                        if (events.isNotEmpty()) {
-                            ViewState.Content(events)
-                        } else {
-                            ViewState.Empty
+                        when (events.size) {
+                            0 -> ViewState.Empty
+                            in 1..2000 -> ViewState.Content(events)
+                            else -> ViewState.TooManyEvents
                         }
                     }
-                    .onErrorReturn { error -> ViewState.Error(error) }
+                    .onErrorReturn { error ->
+                        if (error is HttpException && error.code() == 503) {
+                            ViewState.TooManyEvents
+                        } else {
+                            ViewState.GenericError(error)
+                        }
+
+                    }
                     .toObservable()
             }
 
@@ -83,7 +92,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
                     _loadingEventsState.postValue(state)
                 },
                 { error ->
-                    _loadingEventsState.postValue(ViewState.Error(error))
+                    _loadingEventsState.postValue(ViewState.GenericError(error))
                 }
             )
     }

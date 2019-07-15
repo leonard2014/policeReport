@@ -60,10 +60,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     map?.clear()
                     snackbar?.dismiss()
                 }
-                is MapsViewModel.ViewState.Error -> {
+                is MapsViewModel.ViewState.GenericError -> {
                     progressBar.visibility = View.GONE
                     snackbar = Snackbar.make(rootView, getString(R.string.something_wrong), Snackbar.LENGTH_INDEFINITE)
                         .setAction(getString(R.string.retry)) { viewModel.loadCrimeEvents() }
+                        .apply{show()}
+                }
+                is MapsViewModel.ViewState.TooManyEvents -> {
+                    progressBar.visibility = View.GONE
+                    snackbar = Snackbar.make(rootView, getString(R.string.too_many_events), Snackbar.LENGTH_INDEFINITE)
                         .apply{show()}
                 }
                 is MapsViewModel.ViewState.Empty -> {
