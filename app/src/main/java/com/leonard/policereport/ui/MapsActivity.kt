@@ -68,7 +68,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 is MapsViewModel.ViewState.TooManyEvents -> {
                     progressBar.visibility = View.GONE
-                    snackbar = Snackbar.make(rootView, getString(R.string.too_many_events), Snackbar.LENGTH_INDEFINITE)
+                    snackbar = Snackbar.make(rootView, getString(R.string.too_many_events), Snackbar.LENGTH_SHORT)
                         .apply{show()}
                 }
                 is MapsViewModel.ViewState.Empty -> {
