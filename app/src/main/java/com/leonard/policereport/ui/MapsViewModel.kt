@@ -68,7 +68,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
                     .map { events ->
                         when (events.size) {
                             0 -> ViewState.Empty
-                            in 1..2000 -> ViewState.Content(events)
+                            in 1..1000 -> ViewState.Content(events)
                             else -> ViewState.TooManyEvents
                         }
                     }
