@@ -3,7 +3,6 @@ package com.leonard.policereport.ui
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
-import com.leonard.policereport.model.CrimeEvent
 import com.leonard.policereport.model.Location
 import com.leonard.policereport.model.Street
 import com.leonard.policereport.repository.Repository
@@ -13,7 +12,6 @@ import io.reactivex.Single
 import okhttp3.ResponseBody
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
-
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
@@ -42,12 +40,9 @@ class MapsViewModelTest {
     @Test
     fun `when loading succeeds should send loading then content state`() {
         val location = Location(23.5, 35.8, Street(1, "Liverpool"))
-        val matches = arrayListOf(
-            CrimeEvent("1", "2", 1, location, "subtype", "loc_type", "5", "pid"),
-            CrimeEvent("9", "8", 7, location, "subtype", "loc_type", "5", "pid")
-        )
+        val matches = arrayListOf(location,location)
 
-        whenever(repository.getCrimeEvents(any(), any(), any(), any(), any(), any())).thenReturn(Single.just(matches))
+        whenever(repository.getCrimeEventsLocation(any(), any(), any(), any(), any(), any())).thenReturn(Single.just(matches))
         val testObserver = viewModel.loadingEventsState.testObserver()
 
         viewModel.month = 9
@@ -63,7 +58,7 @@ class MapsViewModelTest {
     fun `when loading fails with generic error should send generic error state`() {
         val error = IOException()
 
-        whenever(repository.getCrimeEvents(any(), any(), any(), any(), any(), any())).thenReturn(Single.error(error))
+        whenever(repository.getCrimeEventsLocation(any(), any(), any(), any(), any(), any())).thenReturn(Single.error(error))
         val testObserver = viewModel.loadingEventsState.testObserver()
 
         viewModel.month = 9
@@ -79,7 +74,7 @@ class MapsViewModelTest {
     fun `when loading fails with 503 error should send too many events error state`() {
         val error = HttpException(Response.error<Int>(503, ResponseBody.create(null, "error")))
 
-        whenever(repository.getCrimeEvents(any(), any(), any(), any(), any(), any())).thenReturn(Single.error(error))
+        whenever(repository.getCrimeEventsLocation(any(), any(), any(), any(), any(), any())).thenReturn(Single.error(error))
         val testObserver = viewModel.loadingEventsState.testObserver()
 
         viewModel.month = 9
@@ -93,9 +88,9 @@ class MapsViewModelTest {
 
     @Test
     fun `when getting empty content should return empty state`() {
-        val emptyList = emptyList<CrimeEvent>()
+        val emptyList = emptyList<Location>()
 
-        whenever(repository.getCrimeEvents(any(), any(), any(), any(), any(), any())).thenReturn(Single.just(emptyList))
+        whenever(repository.getCrimeEventsLocation(any(), any(), any(), any(), any(), any())).thenReturn(Single.just(emptyList))
         val testObserver = viewModel.loadingEventsState.testObserver()
 
         viewModel.month = 9

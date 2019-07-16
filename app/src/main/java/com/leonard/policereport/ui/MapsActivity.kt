@@ -124,7 +124,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun onCameraIdle() {
-        Log.d("London Map", "onCameraIdle")
         try {
             map?.let {
                 viewModel.location = it.cameraPosition.target
@@ -138,8 +137,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun drawMarkers(content: MapsViewModel.ViewState.Content) {
         map?.run {
-            content.events.forEach { event ->
-                val circleOptions = CircleOptions().center(LatLng(event.location.latitude, event.location.longitude))
+            content.events.forEach { location ->
+                val circleOptions = CircleOptions().center(LatLng(location.latitude, location.longitude))
                     .radius(1.0)
                     .fillColor(Color.RED)
                     .strokeColor(Color.RED)

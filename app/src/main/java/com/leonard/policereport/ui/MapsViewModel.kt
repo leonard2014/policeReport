@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
-import com.leonard.policereport.model.CrimeEvent
+import com.leonard.policereport.model.Location
 import com.leonard.policereport.repository.Repository
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
@@ -23,7 +23,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
         class GenericError(val exception: Throwable) : ViewState()
         object TooManyEvents : ViewState()
         object Empty : ViewState()
-        data class Content(val events: List<CrimeEvent>) : ViewState()
+        data class Content(val events: List<Location>) : ViewState()
     }
 
     private val _loadingEventsState = MutableLiveData<ViewState>().apply { value = ViewState.Idle }
@@ -58,7 +58,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
         )
             .switchMap { (_month, _bounds) ->
                 _loadingEventsState.postValue(ViewState.Loading)
-                repository.getCrimeEvents(
+                repository.getCrimeEventsLocation(
                     _bounds.southwest.latitude, _bounds.southwest.longitude,
                     _bounds.northeast.latitude, _bounds.northeast.longitude,
                     year, _month

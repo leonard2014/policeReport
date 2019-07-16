@@ -1,18 +1,18 @@
 package com.leonard.policereport.repository
 
-import com.leonard.policereport.model.CrimeEvent
+import com.leonard.policereport.model.Location
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 
 class Repository(private val apiService: ApiService) {
-    fun getCrimeEvents(
+    fun getCrimeEventsLocation(
         southWestLat: Double,
         southWestLong: Double,
         northEastLat: Double,
         northEastLong: Double,
         year: Int,
         month: Int
-    ): Single<List<CrimeEvent>> {
+    ): Single<List<Location>> {
         val poly =
             "$northEastLat,$southWestLong:$northEastLat,$northEastLong:$southWestLat,$northEastLong:$southWestLat,$southWestLong"
         val date = String.format("%04d-%02d", year, month)
@@ -20,10 +20,9 @@ class Repository(private val apiService: ApiService) {
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.computation())
             .map { events ->
-                events.filter { event ->
-                    event.location.latitude in southWestLat..northEastLat &&
-                    event.location.longitude in southWestLong..northEastLong
-                }
+                events
+                    .groupBy { event -> event.location }
+                    .keys.toList()
             }
     }
 }
