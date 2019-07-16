@@ -55,6 +55,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setupObserver() {
         viewModel.loadingEventsState.observe(this, Observer { state ->
             when (state) {
+                is MapsViewModel.ViewState.Idle -> {
+                    progressBar.visibility = View.GONE
+                    snackbar?.dismiss()
+                    snackbar = null
+                }
                 is MapsViewModel.ViewState.Loading -> {
                     progressBar.visibility = View.VISIBLE
                     map?.clear()

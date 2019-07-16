@@ -18,6 +18,7 @@ import javax.inject.Inject
 
 class MapsViewModel(private val repository: Repository) : ViewModel() {
     sealed class ViewState {
+        object Idle: ViewState()
         object Loading : ViewState()
         class GenericError(val exception: Throwable) : ViewState()
         object TooManyEvents : ViewState()
@@ -25,7 +26,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
         data class Content(val events: List<CrimeEvent>) : ViewState()
     }
 
-    private val _loadingEventsState = MutableLiveData<ViewState>().apply { value = ViewState.Loading }
+    private val _loadingEventsState = MutableLiveData<ViewState>().apply { value = ViewState.Idle }
     val loadingEventsState: LiveData<ViewState> = _loadingEventsState
 
     //Latitude and Longitude of London City

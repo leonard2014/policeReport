@@ -54,7 +54,7 @@ class MapsViewModelTest {
         viewModel.setBounds(LatLngBounds(LatLng(39.2, 0.9), LatLng(40.5, 0.3)))
 
         assertThat(testObserver.observedValues.size).isEqualTo(3)
-        assertThat(testObserver.observedValues[0]).isEqualTo(MapsViewModel.ViewState.Loading)
+        assertThat(testObserver.observedValues[0]).isEqualTo(MapsViewModel.ViewState.Idle)
         assertThat(testObserver.observedValues[1]).isEqualTo(MapsViewModel.ViewState.Loading)
         assertThat(testObserver.observedValues[2]).isEqualTo(MapsViewModel.ViewState.Content(matches))
     }
@@ -70,7 +70,7 @@ class MapsViewModelTest {
         viewModel.setBounds(LatLngBounds(LatLng(39.2, 0.9), LatLng(40.5, 0.3)))
 
         assertThat(testObserver.observedValues.size).isEqualTo(3)
-        assertThat(testObserver.observedValues[0]).isEqualTo(MapsViewModel.ViewState.Loading)
+        assertThat(testObserver.observedValues[0]).isEqualTo(MapsViewModel.ViewState.Idle)
         assertThat(testObserver.observedValues[1]).isEqualTo(MapsViewModel.ViewState.Loading)
         assertThat((testObserver.observedValues[2] as MapsViewModel.ViewState.GenericError).exception).isEqualTo(error)
     }
@@ -86,7 +86,7 @@ class MapsViewModelTest {
         viewModel.setBounds(LatLngBounds(LatLng(39.2, 0.9), LatLng(40.5, 0.3)))
 
         assertThat(testObserver.observedValues.size).isEqualTo(3)
-        assertThat(testObserver.observedValues[0]).isEqualTo(MapsViewModel.ViewState.Loading)
+        assertThat(testObserver.observedValues[0]).isEqualTo(MapsViewModel.ViewState.Idle)
         assertThat(testObserver.observedValues[1]).isEqualTo(MapsViewModel.ViewState.Loading)
         assertThat(testObserver.observedValues[2]).isEqualTo(MapsViewModel.ViewState.TooManyEvents)
     }
@@ -102,7 +102,7 @@ class MapsViewModelTest {
         viewModel.setBounds(LatLngBounds(LatLng(39.2, 0.9), LatLng(40.5, 0.3)))
 
         assertThat(testObserver.observedValues.size).isEqualTo(3)
-        assertThat(testObserver.observedValues[0]).isEqualTo(MapsViewModel.ViewState.Loading)
+        assertThat(testObserver.observedValues[0]).isEqualTo(MapsViewModel.ViewState.Idle)
         assertThat(testObserver.observedValues[1]).isEqualTo(MapsViewModel.ViewState.Loading)
         assertThat(testObserver.observedValues[2]).isEqualTo(MapsViewModel.ViewState.Empty)
     }
