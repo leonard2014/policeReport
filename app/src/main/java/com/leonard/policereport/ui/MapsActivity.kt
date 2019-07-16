@@ -59,6 +59,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     progressBar.visibility = View.VISIBLE
                     map?.clear()
                     snackbar?.dismiss()
+                    snackbar = null
                 }
                 is MapsViewModel.ViewState.GenericError -> {
                     progressBar.visibility = View.GONE
