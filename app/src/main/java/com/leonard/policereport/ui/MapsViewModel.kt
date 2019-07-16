@@ -8,7 +8,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.leonard.policereport.model.CrimeEvent
 import com.leonard.policereport.repository.Repository
-import io.reactivex.Observable.combineLatest
+import io.reactivex.BackpressureStrategy
+import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Function3
 import io.reactivex.rxkotlin.plusAssign
@@ -42,10 +43,8 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
             monthSubject.onNext(monthValue)
         }
 
-    private var bounds = LatLngBounds(LatLng(0.0, 0.0), LatLng(0.0, 0.0))
     private val boundsSubject = BehaviorSubject.create<LatLngBounds>()
     fun setBounds(boundsValue: LatLngBounds) {
-        bounds = boundsValue
         boundsSubject.onNext(boundsValue)
     }
 
@@ -53,17 +52,18 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
         .apply { onNext(true) }
 
     private val loadCrimeEventObservable =
-        combineLatest(
-            monthSubject,
-            boundsSubject,
-            forceLoadSubject,
-            Function3 { _: Int, _: LatLngBounds, _: Boolean -> {} })
-            .switchMap {
+        Flowable.combineLatest(
+            monthSubject.toFlowable(BackpressureStrategy.LATEST),
+            boundsSubject.toFlowable(BackpressureStrategy.LATEST),
+            forceLoadSubject.toFlowable(BackpressureStrategy.LATEST),
+            Function3<Int, LatLngBounds, Boolean, Pair<Int, LatLngBounds>> { _month, _bounds, _ -> _month to _bounds }
+        )
+            .switchMap { (_month, _bounds) ->
                 _loadingEventsState.postValue(ViewState.Loading)
                 repository.getCrimeEvents(
-                    bounds.southwest.latitude, bounds.southwest.longitude,
-                    bounds.northeast.latitude, bounds.northeast.longitude,
-                    year, month
+                    _bounds.southwest.latitude, _bounds.southwest.longitude,
+                    _bounds.northeast.latitude, _bounds.northeast.longitude,
+                    year, _month
                 )
                     .map { events ->
                         when (events.size) {
@@ -80,7 +80,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
                         }
 
                     }
-                    .toObservable()
+                    .toFlowable()
             }
 
     private val disposeBag = CompositeDisposable()
