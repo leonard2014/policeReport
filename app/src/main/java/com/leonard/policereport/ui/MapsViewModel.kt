@@ -8,12 +8,11 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.leonard.policereport.model.CrimeEvent
 import com.leonard.policereport.repository.Repository
-import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Function3
+import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.rxkotlin.plusAssign
-import io.reactivex.subjects.BehaviorSubject
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -35,27 +34,25 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
 
     //hardcoded to 2019
     private val year = 2019
-    private val monthSubject = BehaviorSubject.create<Int>()
+    private val monthStream = BehaviorProcessor.create<Int>().apply { onBackpressureLatest() }
     //hard coded to May
     var month = 5
         set(monthValue) {
             field = monthValue
-            monthSubject.onNext(monthValue)
+            monthStream.onNext(monthValue)
         }
 
-    private val boundsSubject = BehaviorSubject.create<LatLngBounds>()
+    private val boundsStream = BehaviorProcessor.create<LatLngBounds>().apply { onBackpressureLatest() }
     fun setBounds(boundsValue: LatLngBounds) {
-        boundsSubject.onNext(boundsValue)
+        boundsStream.onNext(boundsValue)
     }
 
-    private val forceLoadSubject = BehaviorSubject.create<Boolean>()
+    private val forceLoadStream = BehaviorProcessor.create<Boolean>().apply { onBackpressureLatest() }
         .apply { onNext(true) }
 
     private val loadCrimeEventObservable =
         Flowable.combineLatest(
-            monthSubject.toFlowable(BackpressureStrategy.LATEST),
-            boundsSubject.toFlowable(BackpressureStrategy.LATEST),
-            forceLoadSubject.toFlowable(BackpressureStrategy.LATEST),
+            monthStream, boundsStream, forceLoadStream,
             Function3<Int, LatLngBounds, Boolean, Pair<Int, LatLngBounds>> { _month, _bounds, _ -> _month to _bounds }
         )
             .switchMap { (_month, _bounds) ->
@@ -102,7 +99,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
         disposeBag.clear()
     }
 
-    fun loadCrimeEvents() = forceLoadSubject.onNext(true)
+    fun loadCrimeEvents() = forceLoadStream.onNext(true)
 }
 
 class MapsViewModelFactory
