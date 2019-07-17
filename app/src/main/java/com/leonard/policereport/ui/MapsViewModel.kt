@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 class MapsViewModel(private val repository: Repository) : ViewModel() {
     sealed class ViewState {
-        object Idle: ViewState()
+        object Idle : ViewState()
         object Loading : ViewState()
         class GenericError(val exception: Throwable) : ViewState()
         object TooManyEvents : ViewState()
@@ -55,7 +55,7 @@ class MapsViewModel(private val repository: Repository) : ViewModel() {
         Flowable.combineLatest(
             monthStream, boundsStream, forceLoadStream,
             Function3<Int, LatLngBounds, Boolean, Pair<Int, LatLngBounds>> { _month, _bounds, _ -> _month to _bounds }
-        )
+        ).onBackpressureLatest()
             .switchMap { (_month, _bounds) ->
                 _loadingEventsState.postValue(ViewState.Loading)
                 repository.getCrimeEventsLocation(
