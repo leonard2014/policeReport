@@ -33,7 +33,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var map: GoogleMap? = null
 
     private val mapContentSubject = BehaviorSubject.create<MapsViewModel.ViewState.Content>()
-    private var disposeBag = CompositeDisposable()
+    private val disposeBag = CompositeDisposable()
 
     private var snackbar: Snackbar? = null
 
@@ -93,7 +93,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setupMonthList() {
         //hardcoded to July, 2019
         val currentMonth = 7
-        val months = IntArray(currentMonth) { currentMonth - it }.toTypedArray()
+        val months = (currentMonth downTo 1).toList()
         val adapter = ArrayAdapter<Int>(this, R.layout.month_item, months)
 
         monthSpinner.adapter = adapter
@@ -137,8 +137,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun drawMarkers(content: MapsViewModel.ViewState.Content) {
         map?.run {
-            content.events.forEach { location ->
-                val circleOptions = CircleOptions().center(LatLng(location.latitude, location.longitude))
+            content.events.forEach { (latitude, longitude) ->
+                val circleOptions = CircleOptions().center(LatLng(latitude, longitude))
                     .radius(1.0)
                     .fillColor(Color.RED)
                     .strokeColor(Color.RED)
