@@ -1,3 +1,2 @@
 # policeReport
-
-try RxJava stream
+use RxJava stream
